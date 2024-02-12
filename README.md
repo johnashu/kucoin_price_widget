@@ -1,0 +1,1 @@
+# kucoin_price_widget
