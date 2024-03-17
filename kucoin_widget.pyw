@@ -100,7 +100,7 @@ def update_start_position_in_config(new_position):
     with open(config_path, 'w') as file:
         for line in lines:
             if line.strip().startswith('START_POSITION'):
-                line = f'START_POSITION = {new_position}\n'
+                line = f'START_POSITION = "{new_position}"\n'
             file.write(line)
 
 if __name__ == "__main__":
