@@ -2,7 +2,7 @@ import tkinter as tk
 import threading
 import time
 import requests
-from config import URL, TOKENS, DELAY, AVERAGE_CHAR_WIDTH, MIN_WIDTH
+from config import START_POSITION, URL, TOKENS, DELAY, AVERAGE_CHAR_WIDTH, MIN_WIDTH
 
 previous_prices = {}
 
@@ -61,7 +61,7 @@ def setup_gui():
     root = tk.Tk()
     root.overrideredirect(True)
     root.attributes("-topmost", True)
-    root.geometry("150x30")
+    root.geometry(START_POSITION)
     root.resizable(False, False)
 
     price_text_widget = tk.Text(root, height=1, bg="black", fg="white", font=("Helvetica", 14, "bold"), wrap=tk.NONE)
@@ -81,7 +81,27 @@ def setup_bindings(root):
     root.bind("<Button-3>", lambda event: root.destroy())
     root.bind("<Button-1>", lambda event: setattr(root, "drag_start", (event.x, event.y)))
     root.bind("<ButtonRelease-1>", lambda event: setattr(root, "drag_start", None))
-    root.bind("<B1-Motion>", lambda event: root.geometry(f"+{root.winfo_x() + event.x - root.drag_start[0]}+{root.winfo_y() + event.y - root.drag_start[1]}"))
+    root.bind("<B1-Motion>", lambda event: move_and_log_position(root, event))
+
+def move_and_log_position(root, event):
+    """Moves the window and logs its new position."""
+    new_x = root.winfo_x() + event.x - root.drag_start[0]
+    new_y = root.winfo_y() + event.y - root.drag_start[1]
+    root.geometry(f"+{new_x}+{new_y}")
+    new_position = f"+{new_x}+{new_y}"
+    update_start_position_in_config(new_position)
+
+def update_start_position_in_config(new_position):
+    """Updates the START_POSITION in config.py with the new position."""
+    config_path = 'config.py'
+    with open(config_path, 'r') as file:
+        lines = file.readlines()
+    
+    with open(config_path, 'w') as file:
+        for line in lines:
+            if line.strip().startswith('START_POSITION'):
+                line = f'START_POSITION = {new_position}\n'
+            file.write(line)
 
 if __name__ == "__main__":
     root = setup_gui()
