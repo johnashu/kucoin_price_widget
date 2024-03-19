@@ -37,16 +37,29 @@ def calculate_price_change(token, current_price):
 def update_price_label(text_widget, root):
     """Updates the price label with the latest prices."""
     while True:
-        text_widget.config(state=tk.NORMAL)
-        text_widget.delete("1.0", tk.END)
         all_prices_text = fetch_all_token_prices()
         total_length = 1
+
+        # Buffer to hold new content
+        new_content = []
         for i, (token_text, (change_symbol, color)) in enumerate(all_prices_text):
             pipe = '' if i == len(all_prices_text) - 1 else '  |'
             text_with_symbol = f"  {token_text}{change_symbol}{pipe}"
-            text_widget.insert(tk.END, text_with_symbol)
-            text_widget.tag_add(color, f"end-{len(text_with_symbol)+1}c", "end-1c")
+            new_content.append((text_with_symbol, color))
             total_length += len(text_with_symbol) + 1
+
+        # Update the widget in one operation to minimize flashing
+        text_widget.config(state=tk.NORMAL)
+        text_widget.delete("1.0", tk.END)
+
+        for text_with_symbol, color in new_content:
+            insert_point = text_widget.index(tk.END)
+            text_widget.insert(insert_point, text_with_symbol)
+            # Apply color to the change symbol
+            symbol_start = f"{insert_point}-{len(text_with_symbol)}c"
+            symbol_end = f"{symbol_start}+{len(text_with_symbol)}c"
+            text_widget.tag_add(color, symbol_start, symbol_end)
+
         text_widget.config(state=tk.DISABLED)
         adjust_window_size(root, total_length)
         time.sleep(DELAY)
